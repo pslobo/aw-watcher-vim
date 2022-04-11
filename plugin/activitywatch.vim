@@ -13,6 +13,7 @@ let s:last_heartbeat = localtime()
 let s:file = ''
 let s:language = ''
 let s:project = ''
+let s:repo = ''
 let s:branch = ''
 
 let s:connected = 0
@@ -116,6 +117,16 @@ function! s:GetGitBranch()
     endif
 endfunc
 
+function! s:GetGitRepo()
+    let l:cmd_result = systemlist('basename `git rev-parse --show-toplevel`')[0]
+    let l:is_git_repo = (cmd_result =~ '^fatal: ') ? 0 : 1
+    if is_git_repo
+        return cmd_result
+    else
+        return 'N/A'
+    endif
+endfunc
+
 function! s:Heartbeat()
     " Only send heartbeats if we can connect to aw-server
     if s:connected < 1
@@ -127,12 +138,14 @@ function! s:Heartbeat()
     let l:file = expand('%p')
     let l:language = &filetype
     let l:project = getcwd()
+    let l:branch = s:GetGitRepo()
     let l:branch = s:GetGitBranch()
     " Only send heartbeat if data was changed or more than 1 second has passed
     " since last heartbeat
     if    s:file != l:file ||
         \ s:language != l:language ||
         \ s:project != l:project ||
+        \ s:repo != l:repo ||
         \ s:branch != l:branch ||
         \ l:localtime - s:last_heartbeat > 1
 
@@ -143,6 +156,7 @@ function! s:Heartbeat()
                 \ 'file': l:file,
                 \ 'language': l:language,
                 \ 'project': l:project,
+                \ 'repo': l:repo,
                 \ 'branch': l:branch
             \ }
         \}
@@ -150,6 +164,7 @@ function! s:Heartbeat()
         let s:file = l:file
         let s:language = l:language
         let s:project = l:project
+        let s:repo = l:repo
         let s:branch = l:branch
         let s:last_heartbeat = l:localtime
     endif
