@@ -138,7 +138,7 @@ function! s:Heartbeat()
     let l:file = expand('%p')
     let l:language = &filetype
     let l:project = getcwd()
-    let l:branch = s:GetGitRepo()
+    let l:repo = s:GetGitRepo()
     let l:branch = s:GetGitBranch()
     " Only send heartbeat if data was changed or more than 1 second has passed
     " since last heartbeat
